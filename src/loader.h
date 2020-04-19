@@ -1,1 +1,1 @@
-void AddMyPlayerScripts();
+void AddRecruitCommandScripts();

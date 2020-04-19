@@ -1,0 +1,8 @@
+[worldserver]
+
+#
+# Enable recruit friend command for players
+# default: true
+#
+
+RecruitFriend.enable=true
