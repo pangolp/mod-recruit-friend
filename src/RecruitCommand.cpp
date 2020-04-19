@@ -36,10 +36,14 @@ class RecruitCommand : public CommandScript
 
         }
 
+        static void getTargetAccountIdByName(std::string& name, uint32& accountId)
+        {
+            QueryResult result = CharacterDatabase.PQuery("SELECT `account` FROM `characters` WHERE `name` = %s;", name);
+            accountId = (*result)[0].GetInt32(); 
+        }
+
         static bool HandleAddRecruitFriendCommand(ChatHandler* handler, const char* args)
         {
-
-            QueryResult result;
 
             if (!recruitEnabled)
                 return false;
@@ -53,11 +57,17 @@ class RecruitCommand : public CommandScript
             if (!handler->extractPlayerTarget((char*)args, &target, nullptr, &playerName))
                 return false;
 
+            uint32 targetAccountId;
+
+            if (target)
+                targetAccountId = target->GetSession()->GetAccountId();
+            else
+                getTargetAccountIdByName(playerName, targetAccountId);
+
             uint32 myAccountId = handler->GetSession()->GetAccountId();
-            uint32 targetAccountId = target->GetSession()->GetAccountId();
 
             /* Player's current recruit attribute */
-            result = LoginDatabase.PQuery("SELECT `recruiter` FROM `account` WHERE `recruiter` <> 0 AND `id` = %u;", myAccountId);
+            QueryResult result = LoginDatabase.PQuery("SELECT * FROM `account` WHERE `recruiter` <> 0 AND `id` = %u;", myAccountId);
 
             if (result)
             {
@@ -132,4 +142,5 @@ void AddRecruitCommandScripts()
 {
     new RecruitCommand();
     new RecruitCommandWorld();
+    new RecruitFriendAnnouncer();
 }
