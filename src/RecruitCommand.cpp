@@ -38,7 +38,7 @@ class RecruitCommand : public CommandScript
 
         static void getTargetAccountIdByName(std::string& name, uint32& accountId)
         {
-            QueryResult result = CharacterDatabase.PQuery("SELECT `account` FROM `characters` WHERE `name` = %s;", name);
+            QueryResult result = CharacterDatabase.PQuery("SELECT `account` FROM `characters` WHERE `name` = '%s';", name);
             accountId = (*result)[0].GetInt32(); 
         }
 
