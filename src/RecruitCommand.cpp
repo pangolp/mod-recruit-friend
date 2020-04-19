@@ -11,7 +11,7 @@
 #include "AccountMgr.h"
 #include "LoginDatabase.h"
 
-bool recruitEnabled;
+static bool recruitEnabled, recruitAnnounceEnable;
 
 class RecruitCommand : public CommandScript
 {
@@ -39,6 +39,8 @@ class RecruitCommand : public CommandScript
         static bool HandleAddRecruitFriendCommand(ChatHandler* handler, const char* args)
         {
 
+            QueryResult result;
+
             if (!recruitEnabled)
                 return false;
 
@@ -54,9 +56,18 @@ class RecruitCommand : public CommandScript
             uint32 myAccountId = handler->GetSession()->GetAccountId();
             uint32 targetAccountId = target->GetSession()->GetAccountId();
 
-            QueryResult result = LoginDatabase.PQuery("UPDATE `account` SET `recruiter`= %u WHERE `id` = %u;", targetAccountId, myAccountId);
+            /* Player's current recruit attribute */
+            result = LoginDatabase.PQuery("SELECT `recruiter` FROM `account` WHERE `recruiter` <> 0 AND `id` = %u;", myAccountId);
 
-            (ChatHandler(handler->GetSession())).PSendSysMessage("Player %s has been recruited.", playerName.c_str());
+            if (result)
+            {
+                (ChatHandler(handler->GetSession())).PSendSysMessage("You already have recruited a friend. If you want to recruit another one, you have to reset with the command.");
+                return true;
+            }
+
+            result = LoginDatabase.PQuery("UPDATE `account` SET `recruiter`= %u WHERE `id` = %u;", targetAccountId, myAccountId);
+
+            (ChatHandler(handler->GetSession())).PSendSysMessage("Player %s has been recruited. Please relog again.", playerName.c_str());
 
             return true;
         }
@@ -71,9 +82,23 @@ class RecruitCommand : public CommandScript
 
             QueryResult result = LoginDatabase.PQuery("UPDATE `account` SET `recruiter`= 0 WHERE `id` = %u;", myAccountId);
 
-            (ChatHandler(handler->GetSession())).PSendSysMessage("Your recruited friend has been deleted.");
+            (ChatHandler(handler->GetSession())).PSendSysMessage("Your recruited friend has been deleted. Please relog again.");
 
             return true;
+        }
+};
+
+class RecruitFriendAnnouncer : public PlayerScript
+{
+    public:
+        RecruitFriendAnnouncer() : PlayerScript("RecruitFriendAnnouncer") {}
+
+        void OnLogin(Player* player)
+        {
+            if (recruitAnnounceEnable)
+            {
+                ChatHandler(player->GetSession()).SendSysMessage("This server is running the |cff4CFF00Friend Recruit |rmodule.");
+            }
         }
 };
 
@@ -97,6 +122,7 @@ public:
             sConfigMgr->LoadMore(cfg_file.c_str());
 
             recruitEnabled = sConfigMgr->GetBoolDefault("RecruitFriend.enable", true);
+            recruitAnnounceEnable = sConfigMgr->GetBoolDefault("RecruitFriend.announceEnable", true);
 
         }
     }

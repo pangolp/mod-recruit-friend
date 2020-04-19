@@ -6,3 +6,10 @@
 #
 
 RecruitFriend.enable=true
+
+#
+# Announce Enable
+# default: true
+#
+
+RecruitFriend.announceEnable=true
