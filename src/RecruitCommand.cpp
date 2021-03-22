@@ -128,8 +128,7 @@ public:
 #endif
             std::string cfg_def_file = cfg_file + ".dist";
 
-            sConfigMgr->LoadMore(cfg_def_file.c_str());
-            sConfigMgr->LoadMore(cfg_file.c_str());
+            sConfigMgr->LoadModulesConfigs();
 
             recruitEnabled = sConfigMgr->GetBoolDefault("RecruitFriend.enable", true);
             recruitAnnounceEnable = sConfigMgr->GetBoolDefault("RecruitFriend.announceEnable", true);
