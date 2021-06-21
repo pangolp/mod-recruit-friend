@@ -11,7 +11,21 @@
 #include "AccountMgr.h"
 #include "LoginDatabase.h"
 
-static bool recruitEnabled, recruitAnnounceEnable;
+static bool recruitEnabled;
+
+class RecruitFriendAnnouncer : public PlayerScript
+{
+    public:
+        RecruitFriendAnnouncer() : PlayerScript("RecruitFriendAnnouncer") {}
+
+        void OnLogin(Player* player)
+        {
+            if (sConfigMgr->GetOption<bool>("RecruitFriend.announceEnable", true))
+            {
+                ChatHandler(player->GetSession()).SendSysMessage("This server is running the |cff4CFF00Friend Recruit |rmodule.");
+            }
+        }
+};
 
 class RecruitCommand : public CommandScript
 {
@@ -45,7 +59,7 @@ class RecruitCommand : public CommandScript
         static bool HandleAddRecruitFriendCommand(ChatHandler* handler, const char* args)
         {
 
-            if (!recruitEnabled)
+            if (!sConfigMgr->GetOption<bool>("RecruitFriend.enable", true))
                 return false;
 
             if (!*args)
@@ -85,7 +99,7 @@ class RecruitCommand : public CommandScript
         static bool HandleResetRecruitFriendCommand(ChatHandler* handler, const char* /*args*/)
         {
 
-            if (!recruitEnabled)
+            if (!sConfigMgr->GetOption<bool>("RecruitFriend.enable", true))
                 return false;
 
             uint32 myAccountId = handler->GetSession()->GetAccountId();
@@ -98,48 +112,8 @@ class RecruitCommand : public CommandScript
         }
 };
 
-class RecruitFriendAnnouncer : public PlayerScript
-{
-    public:
-        RecruitFriendAnnouncer() : PlayerScript("RecruitFriendAnnouncer") {}
-
-        void OnLogin(Player* player)
-        {
-            if (recruitAnnounceEnable)
-            {
-                ChatHandler(player->GetSession()).SendSysMessage("This server is running the |cff4CFF00Friend Recruit |rmodule.");
-            }
-        }
-};
-
-class RecruitCommandWorld : public WorldScript
-{
-public:
-    RecruitCommandWorld() : WorldScript("RecruitCommandWorld") { }
-
-    void OnBeforeConfigLoad(bool reload) override
-    {
-        if (!reload)
-        {
-            std::string conf_path = _CONF_DIR;
-            std::string cfg_file = conf_path + "/mod_recruit_friend.conf";
-#ifdef WIN32
-            cfg_file = "mod_recruit_friend.conf";
-#endif
-            std::string cfg_def_file = cfg_file + ".dist";
-
-            sConfigMgr->LoadModulesConfigs();
-
-            recruitEnabled = sConfigMgr->GetBoolDefault("RecruitFriend.enable", true);
-            recruitAnnounceEnable = sConfigMgr->GetBoolDefault("RecruitFriend.announceEnable", true);
-
-        }
-    }
-};
-
 void AddRecruitCommandScripts()
 {
     new RecruitCommand();
-    new RecruitCommandWorld();
     new RecruitFriendAnnouncer();
 }
