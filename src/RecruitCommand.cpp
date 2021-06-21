@@ -11,7 +11,6 @@
 #include "AccountMgr.h"
 #include "LoginDatabase.h"
 
-static bool recruitEnabled;
 
 class RecruitFriendAnnouncer : public PlayerScript
 {
