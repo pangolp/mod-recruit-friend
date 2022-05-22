@@ -26,33 +26,35 @@ class RecruitFriendAnnouncer : public PlayerScript
         }
 };
 
+using namespace Acore::ChatCommands;
+
 class RecruitCommand : public CommandScript
 {
     public:
 
         RecruitCommand() : CommandScript("RecruitCommand") { }
 
-        std::vector<ChatCommand> GetCommands() const override
+        ChatCommandTable GetCommands() const override
         {
-            static std::vector<ChatCommand> commandTable
+            static ChatCommandTable recruitSetCommandTable =
             {
                 { "add",        SEC_PLAYER, false, &HandleAddRecruitFriendCommand, "" },
                 { "reset",      SEC_PLAYER, false, &HandleResetRecruitFriendCommand, "" }
             };
 
-            static std::vector<ChatCommand> recruitCommandTable =
+            static ChatCommandTable commandTable =
             {
-                { "recruit",    SEC_PLAYER, false, nullptr, "", commandTable}
+                { "recruit", SEC_PLAYER, true, nullptr, "", recruitSetCommandTable }
             };
 
-            return recruitCommandTable;
+            return commandTable;
 
         }
 
         static void getTargetAccountIdByName(std::string& name, uint32& accountId)
         {
-            QueryResult result = CharacterDatabase.PQuery("SELECT `account` FROM `characters` WHERE `name` = '%s';", name);
-            accountId = (*result)[0].GetInt32(); 
+            QueryResult result = CharacterDatabase.Query("SELECT `account` FROM `characters` WHERE `name` = '%s';", name);
+            accountId = (*result)[0].Get<int32>();
         }
 
         static bool HandleAddRecruitFriendCommand(ChatHandler* handler, const char* args)
@@ -80,7 +82,7 @@ class RecruitCommand : public CommandScript
             uint32 myAccountId = handler->GetSession()->GetAccountId();
 
             /* Player's current recruit attribute */
-            QueryResult result = LoginDatabase.PQuery("SELECT * FROM `account` WHERE `recruiter` <> 0 AND `id` = %u;", myAccountId);
+            QueryResult result = LoginDatabase.Query("SELECT * FROM `account` WHERE `recruiter` <> 0 AND `id` = %u;", myAccountId);
 
             if (result)
             {
@@ -88,7 +90,7 @@ class RecruitCommand : public CommandScript
                 return true;
             }
 
-            result = LoginDatabase.PQuery("UPDATE `account` SET `recruiter`= %u WHERE `id` = %u;", targetAccountId, myAccountId);
+            result = LoginDatabase.Query("UPDATE `account` SET `recruiter`= %u WHERE `id` = %u;", targetAccountId, myAccountId);
 
             (ChatHandler(handler->GetSession())).PSendSysMessage("Player %s has been recruited. Please relog again.", playerName.c_str());
 
@@ -103,7 +105,7 @@ class RecruitCommand : public CommandScript
 
             uint32 myAccountId = handler->GetSession()->GetAccountId();
 
-            QueryResult result = LoginDatabase.PQuery("UPDATE `account` SET `recruiter`= 0 WHERE `id` = %u;", myAccountId);
+            QueryResult result = LoginDatabase.Query("UPDATE `account` SET `recruiter`= 0 WHERE `id` = %u;", myAccountId);
 
             (ChatHandler(handler->GetSession())).PSendSysMessage("Your recruited friend has been deleted. Please relog again.");
 
