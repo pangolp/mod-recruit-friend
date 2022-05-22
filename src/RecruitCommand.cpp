@@ -11,6 +11,9 @@
 #include "AccountMgr.h"
 #include "LoginDatabase.h"
 
+#if AC_COMPILER == AC_COMPILER_GNU
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
 class RecruitFriendAnnouncer : public PlayerScript
 {
