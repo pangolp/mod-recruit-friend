@@ -24,7 +24,29 @@ class RecruitFriendAnnouncer : public PlayerScript
         {
             if (sConfigMgr->GetOption<bool>("RecruitFriend.announceEnable", true))
             {
-                ChatHandler(player->GetSession()).SendSysMessage("This server is running the |cff4CFF00Friend Recruit |rmodule.");
+                std::string messageModule = "";
+                switch (player->GetSession()->GetSessionDbLocaleIndex())
+                {
+                    case LOCALE_enUS:
+                    case LOCALE_koKR:
+                    case LOCALE_frFR:
+                    case LOCALE_deDE:
+                    case LOCALE_zhCN:
+                    case LOCALE_zhTW:
+                    case LOCALE_ruRU:
+                    {
+                        messageModule = "This server is running the |cff4CFF00Friend Recruit |rmodule.";
+                        break;
+                    }
+                    case LOCALE_esES:
+                    case LOCALE_esMX:
+                    {
+                        messageModule = "Este servidor está ejecutando el módulo |cff4CFF00Friend Recruit|r";
+                    }
+                    default:
+                        break;
+                }
+                ChatHandler(player->GetSession()).SendSysMessage(messageModule);
             }
         }
 };
@@ -85,32 +107,113 @@ class RecruitCommand : public CommandScript
             uint32 myAccountId = handler->GetSession()->GetAccountId();
 
             /* Player's current recruit attribute */
-            QueryResult result = LoginDatabase.Query("SELECT * FROM `account` WHERE `recruiter` <> 0 AND `id` = %u;", myAccountId);
+            QueryResult result = LoginDatabase.Query("SELECT * FROM `account` WHERE `recruiter` <> 0 AND `id`={};", myAccountId);
 
             if (result)
             {
-                (ChatHandler(handler->GetSession())).PSendSysMessage("You already have recruited a friend. If you want to recruit another one, you have to reset with the command.");
+                std::string messageRecruitReset = "";
+                switch (target->GetSession()->GetSessionDbLocaleIndex())
+                {
+                    case LOCALE_enUS:
+                    case LOCALE_koKR:
+                    case LOCALE_frFR:
+                    case LOCALE_deDE:
+                    case LOCALE_zhCN:
+                    case LOCALE_zhTW:
+                    case LOCALE_ruRU:
+                    {
+                        messageRecruitReset = "You already have recruited a friend. If you want to recruit another one, you have to reset with the command: reset.";
+                        break;
+                    }
+                    case LOCALE_esES:
+                    case LOCALE_esMX:
+                    {
+                        messageRecruitReset = "Ya has reclutado a un amigo. Si quieres reclutar a otro, tienes que reiniciar con el comando: reset.";
+                    }
+                    default:
+                        break;
+                }
+                (ChatHandler(handler->GetSession())).SendSysMessage(messageRecruitReset);
                 return true;
             }
 
-            result = LoginDatabase.Query("UPDATE `account` SET `recruiter`= %u WHERE `id` = %u;", targetAccountId, myAccountId);
+            result = LoginDatabase.Query("UPDATE `account` SET `recruiter`={} WHERE `id`={};", targetAccountId, myAccountId);
 
-            (ChatHandler(handler->GetSession())).PSendSysMessage("Player %s has been recruited. Please relog again.", playerName.c_str());
+            std::string messageRecruitSuccess = "";
+            switch (target->GetSession()->GetSessionDbLocaleIndex())
+            {
+                case LOCALE_enUS:
+                case LOCALE_koKR:
+                case LOCALE_frFR:
+                case LOCALE_deDE:
+                case LOCALE_zhCN:
+                case LOCALE_zhTW:
+                case LOCALE_ruRU:
+                {
+                    messageRecruitSuccess = "Excellent, you have recruited in the right way. Close the game, and log in again, for the changes to take effect.";
+                    break;
+                }
+                case LOCALE_esES:
+                case LOCALE_esMX:
+                {
+                    messageRecruitSuccess = "Excelente, has reclutado de manera correcta. Cierra el juego, y vuelve a ingresar, para que los cambios surjan efecto.";
+                }
+                default:
+                    break;
+            }
+
+            (ChatHandler(handler->GetSession())).SendSysMessage(messageRecruitSuccess);
 
             return true;
         }
 
-        static bool HandleResetRecruitFriendCommand(ChatHandler* handler, const char* /*args*/)
+        static bool HandleResetRecruitFriendCommand(ChatHandler* handler, const char* args)
         {
 
             if (!sConfigMgr->GetOption<bool>("RecruitFriend.enable", true))
                 return false;
 
+            Player* target = nullptr;
+            std::string playerName;
+
+            if (!handler->extractPlayerTarget((char*)args, &target, nullptr, &playerName))
+                return false;
+
+            uint32 targetAccountId;
+
+            if (target)
+                targetAccountId = target->GetSession()->GetAccountId();
+            else
+                getTargetAccountIdByName(playerName, targetAccountId);
+
             uint32 myAccountId = handler->GetSession()->GetAccountId();
 
-            QueryResult result = LoginDatabase.Query("UPDATE `account` SET `recruiter`= 0 WHERE `id` = %u;", myAccountId);
+            QueryResult result = LoginDatabase.Query("UPDATE `account` SET `recruiter`=0 WHERE `id`={};", myAccountId);
 
-            (ChatHandler(handler->GetSession())).PSendSysMessage("Your recruited friend has been deleted. Please relog again.");
+            std::string messageRecruitReset = "";
+            switch (target->GetSession()->GetSessionDbLocaleIndex())
+            {
+            case LOCALE_enUS:
+            case LOCALE_koKR:
+            case LOCALE_frFR:
+            case LOCALE_deDE:
+            case LOCALE_zhCN:
+            case LOCALE_zhTW:
+            case LOCALE_ruRU:
+            {
+                messageRecruitReset = "Excellent your recruited restarted. Close the game and log back in for the changes to take effect.";
+                break;
+            }
+            case LOCALE_esES:
+            case LOCALE_esMX:
+            {
+                messageRecruitReset = "Excelente tu reclutado se reinicio. Cierra el juego y vuelve a ingresar para que los cambios surjan efecto.";
+            }
+            default:
+                break;
+            }
+
+            (ChatHandler(handler->GetSession())).SendSysMessage(messageRecruitReset);
 
             return true;
         }
