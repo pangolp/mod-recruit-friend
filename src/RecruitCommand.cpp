@@ -116,7 +116,7 @@ class RecruitCommand : public CommandScript
         }
 };
 
-void AddRecruitCommandScripts()
+void AddRecruitFriendScripts()
 {
     new RecruitCommand();
     new RecruitFriendAnnouncer();
