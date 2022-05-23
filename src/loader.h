@@ -1,6 +1,6 @@
-void AddRecruitFriendScripts();
+void AddRecruitCommandScripts();
 
 void Addmod_recruit_friendScripts()
 {
-    AddRecruitFriendScripts();
+    AddRecruitCommandScripts();
 }

@@ -4,6 +4,7 @@
     https://github.com/pangolp
  */
 
+#include "loader.h"
 #include "ScriptMgr.h"
 #include "Player.h"
 #include "Config.h"
@@ -219,7 +220,7 @@ class RecruitCommand : public CommandScript
         }
 };
 
-void AddRecruitFriendScripts()
+void AddRecruitCommandScripts()
 {
     new RecruitCommand();
     new RecruitFriendAnnouncer();
