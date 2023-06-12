@@ -136,10 +136,6 @@ class recruit_commandscript : public CommandScript
                 return false;
             }
 
-            Player* target = nullptr;
-
-            std::string playerName;
-
             uint32 myAccountId = handler->GetSession()->GetAccountId();
 
             registerQuery(handler, "reset");
