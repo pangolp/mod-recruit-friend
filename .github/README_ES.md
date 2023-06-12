@@ -29,9 +29,8 @@ Luego, tienes que cerrar el juego por completo. Porque debe de volver a cargar l
 
 ## Créditos
 
-* [Nefertum](https://gitlab.com/Nefertum) (autor del módulo)
-* [Stevej / Pangolp](https://github.com/pangolp) (autor del módulo)
-* [BarbzYHOOL](https://github.com/barbzyhool)
-* [Talamortis](https://github.com/talamortis)
-
-AzerothCore: [repository](https://github.com/azerothcore) - [website](http://azerothcore.org/) - [discord chat community](https://discord.gg/PaqQRkd)
+- [Nefertum](https://gitlab.com/Nefertum) (autor del módulo)
+- [Stevej / Pangolp](https://github.com/pangolp) (autor del módulo)
+- [AzerothCore repositorio](https://github.com/azerothcore)
+- [Website](http://azerothcore.org/)
+- [Discord](https://discord.gg/PaqQRkd)

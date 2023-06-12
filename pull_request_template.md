@@ -1,12 +1,12 @@
 <!-- First of all, THANK YOU for your contribution. -->
 
 ## Changes Proposed:
--  
--  
+- 
+- 
 
 ## Issues Addressed:
 <!-- If your fix has a relating issue, link it below -->
-- Closes 
+- Closes
 
 ## SOURCE:
 <!-- If you can, include a source that can strengthen your claim -->
