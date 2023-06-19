@@ -22,7 +22,8 @@ enum RecruitFriendTexts
     RECRUIT_FRIEND_ALREADY_HAVE_RECRUITED,
     RECRUIT_FRIEND_SUCCESS,
     RECRUIT_FRIEND_RESET_SUCCESS,
-    RECRUIT_FRIEND_TARGET_ONESELF
+    RECRUIT_FRIEND_TARGET_ONESELF,
+    RECRUIT_FRIEND_NAMES
 };
 
 /* Message to show that the module is being used. */
@@ -63,7 +64,8 @@ class recruit_commandscript : public CommandScript
             static ChatCommandTable recruitSetCommandTable =
             {
                 { "add",        SEC_PLAYER, false, &HandleAddRecruitFriendCommand, "" },
-                { "reset",      SEC_PLAYER, false, &HandleResetRecruitFriendCommand, "" }
+                { "reset",      SEC_PLAYER, false, &HandleResetRecruitFriendCommand, "" },
+                { "view",      SEC_PLAYER, false, &HandleViewRecruitFriendCommand, "" }
             };
 
             static ChatCommandTable commandTable =
@@ -143,6 +145,37 @@ class recruit_commandscript : public CommandScript
             QueryResult result = LoginDatabase.Query("UPDATE `account` SET `recruiter`=0 WHERE `id`={};", myAccountId);
 
             ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_RESET_SUCCESS);
+
+            return true;
+        }
+
+        static bool HandleViewRecruitFriendCommand(ChatHandler* handler, const char* /*args*/)
+        {
+            if (!sConfigMgr->GetOption<bool>("RecruitFriend.enable", true))
+            {
+                handler->SendSysMessage(RECRUIT_FRIEND_DISABLE);
+                return false;
+            }
+
+            uint32 myAccountId = handler->GetSession()->GetAccountId();
+
+            registerQuery(handler, "view");
+
+            QueryResult result = LoginDatabase.Query("SELECT `recruiter` FROM `account` WHERE `id`={};", myAccountId);
+
+            if (result)
+            {
+                Field* fields = result->Fetch();
+                QueryResult resultCharacters = CharacterDatabase.Query("SELECT `name` FROM `characters` WHERE `account`={};", fields[0].Get<uint8>());
+                if (resultCharacters)
+                {
+                    do
+                    {
+                        Field* fieldsCharacters = resultCharacters->Fetch();
+                        handler->PSendSysMessage(RECRUIT_FRIEND_NAMES, fieldsCharacters[0].Get<std::string>());
+                    } while (resultCharacters->NextRow());
+                }
+            }
 
             return true;
         }
