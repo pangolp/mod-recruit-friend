@@ -78,7 +78,7 @@ class recruit_commandscript : public CommandScript
 
         static void getTargetAccountIdByName(std::string& name, uint32& accountId)
         {
-            QueryResult result = CharacterDatabase.Query("SELECT `account` FROM `characters` WHERE `name` = '%s';", name);
+            QueryResult result = CharacterDatabase.Query("SELECT `account` FROM `characters` WHERE `name`='{}';", name);
             accountId = (*result)[0].Get<int32>();
         }
 
