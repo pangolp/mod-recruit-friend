@@ -10,6 +10,7 @@
 #include "Chat.h"
 #include "AccountMgr.h"
 #include "LoginDatabase.h"
+#include <map>
 
 #if AC_COMPILER == AC_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -23,8 +24,11 @@ enum RecruitFriendTexts
     RECRUIT_FRIEND_SUCCESS,
     RECRUIT_FRIEND_RESET_SUCCESS,
     RECRUIT_FRIEND_TARGET_ONESELF,
-    RECRUIT_FRIEND_NAMES
+    RECRUIT_FRIEND_NAMES,
+    RECRUIT_FRIEND_COOLDOWN,
 };
+
+std::map<uint32, std::time_t> commandCooldown;
 
 /* Message to show that the module is being used. */
 class RecruitFriendAnnouncer : public PlayerScript
@@ -110,6 +114,21 @@ class recruit_commandscript : public CommandScript
 
             uint32 myAccountId = handler->GetSession()->GetAccountId();
 
+            if(sConfigMgr->GetOption<bool>("RecruitFriend.cooldownEnabled", true))
+            {
+                uint32 cooldownValue = sConfigMgr->GetOption<uint32>("RecruitFriend.cooldownValue", 300000);
+                std::time_t currentTime = std::time(0);
+
+                if( currentTime - commandCooldown[myAccountId] <= cooldownValue)
+                {
+                    ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_COOLDOWN);
+                    return true;
+                } else 
+                {
+                    commandCooldown.erase(myAccountId) ;
+                }
+            }
+
             registerQuery(handler, "add");
 
             QueryResult result = LoginDatabase.Query("SELECT * FROM `account` WHERE `recruiter` <> 0 AND `id`={};", myAccountId);
@@ -121,6 +140,7 @@ class recruit_commandscript : public CommandScript
             else if (targetAccountId != myAccountId)
             {
                 result = LoginDatabase.Query("UPDATE `account` SET `recruiter`={} WHERE `id`={};", targetAccountId, myAccountId);
+                commandCooldown[myAccountId] = std::time(0);
                 ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_SUCCESS);
             }
             else
@@ -139,6 +159,21 @@ class recruit_commandscript : public CommandScript
             }
 
             uint32 myAccountId = handler->GetSession()->GetAccountId();
+
+            if(sConfigMgr->GetOption<bool>("RecruitFriend.cooldownEnabled", true))
+            {
+                uint32 cooldownValue = sConfigMgr->GetOption<uint32>("RecruitFriend.cooldownValue", 300000);
+                std::time_t currentTime = std::time(0);
+
+                if( currentTime - commandCooldown[myAccountId] <= cooldownValue)
+                {
+                    ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_COOLDOWN);
+                    return true;
+                } else 
+                {
+                    commandCooldown.erase(myAccountId) ;
+                }
+            }
 
             registerQuery(handler, "reset");
 
