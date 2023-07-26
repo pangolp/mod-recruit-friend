@@ -12,10 +12,6 @@
 #include "LoginDatabase.h"
 #include <map>
 
-#if AC_COMPILER == AC_COMPILER_GNU
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
 enum RecruitFriendTexts
 {
     HELLO_RECRUIT_FRIEND = 35450,
@@ -30,7 +26,6 @@ enum RecruitFriendTexts
 
 std::map<uint32, std::time_t> commandCooldown;
 
-/* Message to show that the module is being used. */
 class RecruitFriendAnnouncer : public PlayerScript
 {
     public:
@@ -45,7 +40,6 @@ class RecruitFriendAnnouncer : public PlayerScript
         }
 };
 
-/* Register the query, to know who has requested it. */
 void registerQuery(ChatHandler* handler, const char* commandType)
 {
     uint32 myAccountId = handler->GetSession()->GetAccountId();
@@ -58,23 +52,23 @@ void registerQuery(ChatHandler* handler, const char* commandType)
 
 using namespace Acore::ChatCommands;
 
-class recruit_commandscript : public CommandScript
+class RecruitCommandscript : public CommandScript
 {
     public:
-        recruit_commandscript() : CommandScript("recruit_commandscript") { }
+        RecruitCommandscript() : CommandScript("RecruitCommandscript") {}
 
         ChatCommandTable GetCommands() const override
         {
             static ChatCommandTable recruitSetCommandTable =
             {
-                { "add",        SEC_PLAYER, false, &HandleAddRecruitFriendCommand, "" },
-                { "reset",      SEC_PLAYER, false, &HandleResetRecruitFriendCommand, "" },
-                { "view",      SEC_PLAYER, false, &HandleViewRecruitFriendCommand, "" }
+                { "add",  HandleAddRecruitFriendCommand,  SEC_PLAYER, Console::Yes },
+                { "reset",  HandleResetRecruitFriendCommand,  SEC_PLAYER, Console::Yes },
+                { "view",  HandleViewRecruitFriendCommand,  SEC_PLAYER, Console::Yes }
             };
 
             static ChatCommandTable commandTable =
             {
-                { "recruit", SEC_PLAYER, true, nullptr, "", recruitSetCommandTable }
+                { "recruit",  recruitSetCommandTable }
             };
 
             return commandTable;
@@ -86,7 +80,7 @@ class recruit_commandscript : public CommandScript
             accountId = (*result)[0].Get<int32>();
         }
 
-        static bool HandleAddRecruitFriendCommand(ChatHandler* handler, const char* args)
+        static bool HandleAddRecruitFriendCommand(ChatHandler* handler, std::string args)
         {
 
             if (!sConfigMgr->GetOption<bool>("RecruitFriend.enable", true))
@@ -95,14 +89,14 @@ class recruit_commandscript : public CommandScript
                 return false;
             }
 
-            if (!*args)
+            if (!args.empty())
                 return false;
 
             Player* target = nullptr;
 
             std::string playerName;
 
-            if (!handler->extractPlayerTarget((char*)args, &target, nullptr, &playerName))
+            if (!handler->extractPlayerTarget((char*)args.c_str(), &target, nullptr, &playerName))
                 return false;
 
             uint32 targetAccountId;
@@ -123,9 +117,10 @@ class recruit_commandscript : public CommandScript
                 {
                     ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_COOLDOWN);
                     return true;
-                } else 
+                }
+                else
                 {
-                    commandCooldown.erase(myAccountId) ;
+                    commandCooldown.erase(myAccountId);
                 }
             }
 
@@ -150,7 +145,7 @@ class recruit_commandscript : public CommandScript
             return true;
         }
 
-        static bool HandleResetRecruitFriendCommand(ChatHandler* handler, const char* /*args*/)
+        static bool HandleResetRecruitFriendCommand(ChatHandler* handler, std::string /*args*/)
         {
             if (!sConfigMgr->GetOption<bool>("RecruitFriend.enable", true))
             {
@@ -169,9 +164,10 @@ class recruit_commandscript : public CommandScript
                 {
                     ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_COOLDOWN);
                     return true;
-                } else 
+                }
+                else
                 {
-                    commandCooldown.erase(myAccountId) ;
+                    commandCooldown.erase(myAccountId);
                 }
             }
 
@@ -184,7 +180,7 @@ class recruit_commandscript : public CommandScript
             return true;
         }
 
-        static bool HandleViewRecruitFriendCommand(ChatHandler* handler, const char* /*args*/)
+        static bool HandleViewRecruitFriendCommand(ChatHandler* handler, std::string /*args*/)
         {
             if (!sConfigMgr->GetOption<bool>("RecruitFriend.enable", true))
             {
@@ -218,6 +214,6 @@ class recruit_commandscript : public CommandScript
 
 void AddRecruitCommandScripts()
 {
-    new recruit_commandscript();
+    new RecruitCommandscript();
     new RecruitFriendAnnouncer();
 }
