@@ -12,18 +12,18 @@ RecruitFriend.enable=true
 # default: true
 #
 
-RecruitFriend.announceEnable=true
+RecruitFriend.announceEnable = true
 
 #
 # Enable recruit friend command cooldown
 # default: true
 #
 
-RecruitFriend.cooldownEnabled=true
+RecruitFriend.cooldownEnabled = true
 
 #
 # recruit friend cooldown value
 # default: 300000 in Milliseconds
 #
 
-RecruitFriend.cooldownValue=300000
+RecruitFriend.cooldownValue = 300000
