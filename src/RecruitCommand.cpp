@@ -73,6 +73,12 @@ void waitToUseCommand(ChatHandler* handler, uint32 myAccountId)
     }
 }
 
+static void getTargetAccountIdByName(std::string& name, uint32& accountId)
+{
+    QueryResult result = CharacterDatabase.Query("SELECT `account` FROM `characters` WHERE `name`='{}';", name);
+    accountId = (*result)[0].Get<int32>();
+}
+
 using namespace Acore::ChatCommands;
 
 class RecruitCommandscript : public CommandScript
@@ -97,7 +103,7 @@ class RecruitCommandscript : public CommandScript
             return commandTable;
         }
 
-        static bool HandleAddRecruitFriendCommand(ChatHandler* handler, std::string accountName)
+        static bool HandleAddRecruitFriendCommand(ChatHandler* handler, std::string characterName)
         {
 
             if (!recruitFriend.commandEnable)
@@ -106,11 +112,31 @@ class RecruitCommandscript : public CommandScript
                 return false;
             }
 
-            uint32 targetAccountId = AccountMgr::GetId(accountName);
+            if (characterName.empty())
+                return false;
+
+            Player* target = nullptr;
+
+            std::string playerName;
+            uint32 targetAccountId;
+
+            if (!handler->extractPlayerTarget(characterName.data(), &target, nullptr, &playerName))
+            {
+                return false;
+            }
+
+            if (target)
+            {
+                targetAccountId = target->GetSession()->GetAccountId();
+            }
+            else
+            {
+                getTargetAccountIdByName(playerName, targetAccountId);
+            }
 
             if (targetAccountId == 0)
             {
-                handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
+                handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, characterName.c_str());
                 handler->SetSentErrorMessage(true);
                 return false;
             }
