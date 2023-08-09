@@ -55,7 +55,7 @@ void registerQuery(ChatHandler* handler, const char* commandType)
     AccountMgr::GetName(myAccountId, accountName);
     std::string characterName = handler->GetSession()->GetPlayerName();
     std::string ipAccount = handler->GetSession()->GetRemoteAddress();
-    QueryResult info = LoginDatabase.Query("INSERT INTO `recruit_info` (`accountId`, `accountName`, `characterName`, `ip`, `command`) VALUES ({}, '{}', '{}', '{}', '{}');", myAccountId, accountName.c_str(), characterName.c_str(), ipAccount.c_str(), commandType);
+    QueryResult info = LoginDatabase.Query("INSERT INTO `recruit_info` (`accountId`, `accountName`, `characterName`, `ip`, `command`) VALUES ({}, '{}', '{}', '{}', '{}')", myAccountId, accountName.c_str(), characterName.c_str(), ipAccount.c_str(), commandType);
 }
 
 void waitToUseCommand(ChatHandler* handler, uint32 myAccountId)
@@ -75,7 +75,7 @@ void waitToUseCommand(ChatHandler* handler, uint32 myAccountId)
 
 static void getTargetAccountIdByName(std::string& name, uint32& accountId)
 {
-    QueryResult result = CharacterDatabase.Query("SELECT `account` FROM `characters` WHERE `name`='{}';", name);
+    QueryResult result = CharacterDatabase.Query("SELECT `account` FROM `characters` WHERE `name`='{}'", name);
     accountId = (*result)[0].Get<int32>();
 }
 
@@ -154,7 +154,7 @@ class RecruitCommandscript : public CommandScript
 
             registerQuery(handler, "add");
 
-            QueryResult result = LoginDatabase.Query("SELECT * FROM `account` WHERE `recruiter` <> 0 AND `id`={};", myAccountId);
+            QueryResult result = LoginDatabase.Query("SELECT * FROM `account` WHERE `recruiter` <> 0 AND `id`={}", myAccountId);
 
             if (result)
             {
@@ -162,7 +162,7 @@ class RecruitCommandscript : public CommandScript
             }
             else if (targetAccountId != myAccountId)
             {
-                result = LoginDatabase.Query("UPDATE `account` SET `recruiter`={} WHERE `id`={};", targetAccountId, myAccountId);
+                result = LoginDatabase.Query("UPDATE `account` SET `recruiter`={} WHERE `id`={}", targetAccountId, myAccountId);
                 ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_SUCCESS);
             }
             else
@@ -192,7 +192,7 @@ class RecruitCommandscript : public CommandScript
             }
 
             registerQuery(handler, "reset");
-            QueryResult result = LoginDatabase.Query("UPDATE `account` SET `recruiter`=0 WHERE `id`={};", myAccountId);
+            QueryResult result = LoginDatabase.Query("UPDATE `account` SET `recruiter`=0 WHERE `id`={}", myAccountId);
             ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_RESET_SUCCESS);
 
             return true;
@@ -219,18 +219,16 @@ class RecruitCommandscript : public CommandScript
 
             registerQuery(handler, "view");
 
-            QueryResult result = LoginDatabase.Query("SELECT `recruiter` FROM `account` WHERE `id`={};", myAccountId);
+            QueryResult result = LoginDatabase.Query("SELECT `recruiter` FROM `account` WHERE `id`={}", myAccountId);
 
             if (result)
             {
-                Field* fields = result->Fetch();
-                QueryResult resultCharacters = CharacterDatabase.Query("SELECT `name` FROM `characters` WHERE `account`={};", fields[0].Get<uint8>());
+                QueryResult resultCharacters = CharacterDatabase.Query("SELECT `name` FROM `characters` WHERE `account`={}", (*result)[0].Get<uint32>());
                 if (resultCharacters)
                 {
                     do
                     {
-                        Field* fieldsCharacters = resultCharacters->Fetch();
-                        handler->PSendSysMessage(RECRUIT_FRIEND_NAMES, fieldsCharacters[0].Get<std::string>());
+                        handler->PSendSysMessage(RECRUIT_FRIEND_NAMES, (*resultCharacters)[0].Get<std::string>());
                     } while (resultCharacters->NextRow());
                 }
                 else
