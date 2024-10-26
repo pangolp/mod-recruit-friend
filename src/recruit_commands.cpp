@@ -14,15 +14,15 @@
 
 enum RecruitFriendTexts
 {
-    HELLO_RECRUIT_FRIEND = 35450,
-    RECRUIT_FRIEND_DISABLE,
-    RECRUIT_FRIEND_ALREADY_HAVE_RECRUITED,
-    RECRUIT_FRIEND_SUCCESS,
-    RECRUIT_FRIEND_RESET_SUCCESS,
-    RECRUIT_FRIEND_TARGET_ONESELF,
-    RECRUIT_FRIEND_NAMES,
-    RECRUIT_FRIEND_COOLDOWN,
-    RECRUIT_VIEW_EMPTY
+    HELLO_RECRUIT_FRIEND                        = 35450,
+    RECRUIT_FRIEND_DISABLE                      = 35451,
+    RECRUIT_FRIEND_ALREADY_HAVE_RECRUITED       = 35452,
+    RECRUIT_FRIEND_SUCCESS                      = 35453,
+    RECRUIT_FRIEND_RESET_SUCCESS                = 35454,
+    RECRUIT_FRIEND_TARGET_ONESELF               = 35455,
+    RECRUIT_FRIEND_NAMES                        = 35456,
+    RECRUIT_FRIEND_COOLDOWN                     = 35457,
+    RECRUIT_VIEW_EMPTY                          = 35458
 };
 
 struct RecruitFriendStruct
@@ -51,16 +51,22 @@ public:
 void registerQuery(ChatHandler* handler, const char* commandType)
 {
     uint32 myAccountId = handler->GetSession()->GetAccountId();
+
     std::string accountName;
+
     AccountMgr::GetName(myAccountId, accountName);
+
     std::string characterName = handler->GetSession()->GetPlayerName();
+
     std::string ipAccount = handler->GetSession()->GetRemoteAddress();
+
     QueryResult info = LoginDatabase.Query("INSERT INTO `recruit_info` (`accountId`, `accountName`, `characterName`, `ip`, `command`) VALUES ({}, '{}', '{}', '{}', '{}')", myAccountId, accountName.c_str(), characterName.c_str(), ipAccount.c_str(), commandType);
 }
 
-void waitToUseCommand(ChatHandler* handler, uint32 myAccountId)
+static void waitToUseCommand(ChatHandler* handler, uint32 myAccountId)
 {
     std::time_t currentTime = std::time(0);
+
     uint32 delta = std::difftime(currentTime, recruitFriend.commandCooldown[myAccountId]);
 
     if (delta <= (uint32)recruitFriend.cooldownValue / 1000)
@@ -76,6 +82,7 @@ void waitToUseCommand(ChatHandler* handler, uint32 myAccountId)
 static void getTargetAccountIdByName(std::string& name, uint32& accountId)
 {
     QueryResult result = CharacterDatabase.Query("SELECT `account` FROM `characters` WHERE `name`='{}'", name);
+
     accountId = (*result)[0].Get<int32>();
 }
 
@@ -146,6 +153,7 @@ class RecruitCommandscript : public CommandScript
             if (recruitFriend.cooldownEnabled)
             {
                 waitToUseCommand(handler, myAccountId);
+
                 if (!recruitFriend.commandCooldown[myAccountId])
                     recruitFriend.commandCooldown[myAccountId] = std::time(0);
                 else
@@ -163,6 +171,7 @@ class RecruitCommandscript : public CommandScript
             else if (targetAccountId != myAccountId)
             {
                 result = LoginDatabase.Query("UPDATE `account` SET `recruiter`={} WHERE `id`={}", targetAccountId, myAccountId);
+
                 ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_SUCCESS);
             }
             else
@@ -185,6 +194,7 @@ class RecruitCommandscript : public CommandScript
             if (recruitFriend.cooldownEnabled)
             {
                 waitToUseCommand(handler, myAccountId);
+
                 if (!recruitFriend.commandCooldown[myAccountId])
                     recruitFriend.commandCooldown[myAccountId] = std::time(0);
                 else
@@ -192,7 +202,9 @@ class RecruitCommandscript : public CommandScript
             }
 
             registerQuery(handler, "reset");
+
             QueryResult result = LoginDatabase.Query("UPDATE `account` SET `recruiter`=0 WHERE `id`={}", myAccountId);
+
             ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_RESET_SUCCESS);
 
             return true;
@@ -211,6 +223,7 @@ class RecruitCommandscript : public CommandScript
             if (recruitFriend.cooldownEnabled)
             {
                 waitToUseCommand(handler, myAccountId);
+
                 if (!recruitFriend.commandCooldown[myAccountId])
                     recruitFriend.commandCooldown[myAccountId] = std::time(0);
                 else
