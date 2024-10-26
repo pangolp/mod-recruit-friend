@@ -4,7 +4,7 @@
 
 - Latest build status with azerothcore:
 
-[![Build Status](https://github.com/pangolp/mod-recruit-friend/workflows/core-build/badge.svg?branch=master&event=push)](https://github.com/pangolp/mod-recruit-friend)
+[![Build Status](https://github.com/pangolp/mod-recruit-friend/actions/workflows/core-build.yml/badge.svg)](https://github.com/pangolp/mod-recruit-friend/actions)
 
 [English](README.md) | [Español](README_ES.md)
 
