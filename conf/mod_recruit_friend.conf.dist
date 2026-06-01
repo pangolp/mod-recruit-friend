@@ -27,3 +27,23 @@ RecruitFriend.cooldownEnabled = true
 #
 
 RecruitFriend.cooldownValue = 300000
+
+#
+#  RecruitFriend audit log
+#
+#    Appender.RecruitFriend
+#        Writes command usage to a dedicated log file.
+#        Type 2 = File | LogLevel 4 = Info | Flags 1 = Timestamp prefix
+#        File: RecruitFriend.log (created inside LogsDir from worldserver.conf)
+#        Mode: a = Append (history survives restarts)
+#
+
+Appender.RecruitFriend=2,4,1,RecruitFriend.log,a
+
+#
+#    Logger.module.recruitfriend
+#        Routes the recruit friend log category to the appender above.
+#        LogLevel 4 = Info
+#
+
+Logger.module.recruitfriend=4,RecruitFriend

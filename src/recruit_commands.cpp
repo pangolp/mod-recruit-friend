@@ -8,8 +8,8 @@
 #include "Player.h"
 #include "Config.h"
 #include "Chat.h"
-#include "AccountMgr.h"
 #include "LoginDatabase.h"
+#include "Log.h"
 #include <map>
 
 enum RecruitFriendTexts
@@ -57,19 +57,6 @@ public:
             recruitFriend.commandCooldown.erase(it);
     }
 };
-
-static void registerQuery(ChatHandler* handler, char const* commandType)
-{
-    uint32 myAccountId = handler->GetSession()->GetAccountId();
-
-    std::string accountName;
-    AccountMgr::GetName(myAccountId, accountName);
-
-    std::string characterName = handler->GetSession()->GetPlayerName();
-    std::string ipAccount = handler->GetSession()->GetRemoteAddress();
-
-    LoginDatabase.Execute("INSERT INTO `recruit_info` (`accountId`, `accountName`, `characterName`, `ip`, `command`) VALUES ({}, '{}', '{}', '{}', '{}')", myAccountId, accountName, characterName, ipAccount, commandType);
-}
 
 // Returns true if the command is still on cooldown (message sent), false if the player can proceed.
 static bool isCommandOnCooldown(ChatHandler* handler, uint32 accountId)
@@ -174,7 +161,8 @@ class RecruitCommandscript : public CommandScript
                 recruitFriend.commandCooldown[myAccountId] = std::time(nullptr);
             }
 
-            registerQuery(handler, "add");
+            LOG_INFO("module.recruitfriend", "[RecruitFriend] Account: {} | Character: {} | IP: {} | Command: add | Target account: {}",
+                myAccountId, handler->GetSession()->GetPlayerName(), handler->GetSession()->GetRemoteAddress(), targetAccountId);
 
             QueryResult result = LoginDatabase.Query("SELECT 1 FROM `account` WHERE `recruiter` <> 0 AND `id`={}", myAccountId);
 
@@ -208,7 +196,8 @@ class RecruitCommandscript : public CommandScript
                 recruitFriend.commandCooldown[myAccountId] = std::time(nullptr);
             }
 
-            registerQuery(handler, "reset");
+            LOG_INFO("module.recruitfriend", "[RecruitFriend] Account: {} | Character: {} | IP: {} | Command: reset",
+                myAccountId, handler->GetSession()->GetPlayerName(), handler->GetSession()->GetRemoteAddress());
 
             QueryResult result = LoginDatabase.Query("SELECT `recruiter` FROM `account` WHERE `id`={}", myAccountId);
 
@@ -242,7 +231,8 @@ class RecruitCommandscript : public CommandScript
                 recruitFriend.commandCooldown[myAccountId] = std::time(nullptr);
             }
 
-            registerQuery(handler, "view");
+            LOG_INFO("module.recruitfriend", "[RecruitFriend] Account: {} | Character: {} | IP: {} | Command: view",
+                myAccountId, handler->GetSession()->GetPlayerName(), handler->GetSession()->GetRemoteAddress());
 
             QueryResult result = LoginDatabase.Query("SELECT `recruiter` FROM `account` WHERE `id`={}", myAccountId);
 
