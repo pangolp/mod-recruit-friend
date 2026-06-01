@@ -42,13 +42,23 @@ public:
     void OnPlayerLogin(Player* player) override
     {
         if (recruitFriend.announceEnable)
-        {
             ChatHandler(player->GetSession()).SendSysMessage(HELLO_RECRUIT_FRIEND);
-        }
+    }
+
+    void OnPlayerLogout(Player* player) override
+    {
+        uint32 accountId = player->GetSession()->GetAccountId();
+        auto it = recruitFriend.commandCooldown.find(accountId);
+        if (it == recruitFriend.commandCooldown.end())
+            return;
+
+        uint32 delta = static_cast<uint32>(std::difftime(std::time(nullptr), it->second));
+        if (delta > recruitFriend.cooldownValue / IN_MILLISECONDS)
+            recruitFriend.commandCooldown.erase(it);
     }
 };
 
-void registerQuery(ChatHandler* handler, char const* commandType)
+static void registerQuery(ChatHandler* handler, char const* commandType)
 {
     uint32 myAccountId = handler->GetSession()->GetAccountId();
 
@@ -132,7 +142,7 @@ class RecruitCommandscript : public CommandScript
 
             Player* target = nullptr;
             std::string playerName;
-            uint32 targetAccountId;
+            uint32 targetAccountId = 0;
 
             if (!handler->extractPlayerTarget(characterName.data(), &target, nullptr, &playerName))
                 return false;
@@ -151,6 +161,12 @@ class RecruitCommandscript : public CommandScript
 
             uint32 myAccountId = handler->GetSession()->GetAccountId();
 
+            if (targetAccountId == myAccountId)
+            {
+                ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_TARGET_ONESELF);
+                return true;
+            }
+
             if (recruitFriend.cooldownEnabled)
             {
                 if (isCommandOnCooldown(handler, myAccountId))
@@ -160,20 +176,16 @@ class RecruitCommandscript : public CommandScript
 
             registerQuery(handler, "add");
 
-            QueryResult result = LoginDatabase.Query("SELECT * FROM `account` WHERE `recruiter` <> 0 AND `id`={}", myAccountId);
+            QueryResult result = LoginDatabase.Query("SELECT 1 FROM `account` WHERE `recruiter` <> 0 AND `id`={}", myAccountId);
 
             if (result)
             {
                 ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_ALREADY_HAVE_RECRUITED);
             }
-            else if (targetAccountId != myAccountId)
+            else
             {
                 LoginDatabase.Execute("UPDATE `account` SET `recruiter`={} WHERE `id`={}", targetAccountId, myAccountId);
                 ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_SUCCESS);
-            }
-            else
-            {
-                ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_FRIEND_TARGET_ONESELF);
             }
 
             return true;
@@ -197,6 +209,14 @@ class RecruitCommandscript : public CommandScript
             }
 
             registerQuery(handler, "reset");
+
+            QueryResult result = LoginDatabase.Query("SELECT `recruiter` FROM `account` WHERE `id`={}", myAccountId);
+
+            if (!result || (*result)[0].Get<uint32>() == 0)
+            {
+                ChatHandler(handler->GetSession()).SendSysMessage(RECRUIT_VIEW_EMPTY);
+                return true;
+            }
 
             LoginDatabase.Execute("UPDATE `account` SET `recruiter`=0 WHERE `id`={}", myAccountId);
 
