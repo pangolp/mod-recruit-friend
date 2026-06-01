@@ -1,3 +1,7 @@
+-- Migrate strings from acore_string to module_string / module_string_locale
+SET @ENTRY := 35450;
+DELETE FROM `acore_string` WHERE `entry` BETWEEN @ENTRY+0 AND @ENTRY+8;
+
 DELETE FROM `module_string` WHERE `module` = 'mod-recruit-friend';
 INSERT INTO `module_string` (`module`, `id`, `string`) VALUES
 ('mod-recruit-friend', 1, 'This server is running the |cff4CFF00Friend Recruit |rmodule.'),
