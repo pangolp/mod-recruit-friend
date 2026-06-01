@@ -39,7 +39,7 @@ class RecruitFriendAnnouncer : public PlayerScript
 public:
     RecruitFriendAnnouncer() : PlayerScript("RecruitFriendAnnouncer") {}
 
-    void OnLogin(Player* player) override
+    void OnPlayerLogin(Player* player) override
     {
         if (recruitFriend.announceEnable)
         {
