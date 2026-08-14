@@ -29,7 +29,7 @@ enum RecruitFriendTexts : uint32
 struct RecruitFriendStruct
 {
     std::map<uint32, std::time_t> commandCooldown;
-    bool announceEnable, commandEnable, cooldownEnabled;
+    bool announceEnable, commandEnable, cooldownEnabled, allowSelfRecruit;
     uint32 cooldownValue;
 };
 
@@ -144,7 +144,7 @@ class RecruitCommandscript : public CommandScript
 
             uint32 myAccountId = handler->GetSession()->GetAccountId();
 
-            if (targetAccountId == myAccountId)
+            if (targetAccountId == myAccountId && !recruitFriend.allowSelfRecruit)
             {
                 handler->PSendModuleSysMessage("mod-recruit-friend", RECRUIT_FRIEND_TARGET_ONESELF);
                 return true;
@@ -269,6 +269,7 @@ public:
         recruitFriend.commandEnable = sConfigMgr->GetOption<bool>("RecruitFriend.enable", true);
         recruitFriend.cooldownEnabled = sConfigMgr->GetOption<bool>("RecruitFriend.cooldownEnabled", true);
         recruitFriend.cooldownValue = sConfigMgr->GetOption<uint32>("RecruitFriend.cooldownValue", 300000);
+        recruitFriend.allowSelfRecruit = sConfigMgr->GetOption<bool>("RecruitFriend.allowSelfRecruit", false);
     }
 };
 

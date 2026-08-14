@@ -47,6 +47,14 @@ RecruitAFriend.MaxLevel = 60
 RecruitAFriend.MaxDifference = 4
 ```
 
+## Recruiting yourself
+
+By default an account cannot recruit itself. Set `RecruitFriend.allowSelfRecruit = true`
+in `mod_recruit_friend.conf` to lift that restriction — useful with modules like
+[mod-playerbots](https://github.com/liyunfan1223/mod-playerbots), where a "recruited"
+character can be an alt bot on your own account, letting you get the Recruit-A-Friend
+experience multiplier while soloing with a bot alt.
+
 ## Available commands
 
 - `.recruit add <characterName>`. Ex: `.recruit add Pango`

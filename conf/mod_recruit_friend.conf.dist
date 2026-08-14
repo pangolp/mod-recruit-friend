@@ -29,6 +29,16 @@ RecruitFriend.cooldownEnabled = true
 RecruitFriend.cooldownValue = 300000
 
 #
+# Allow an account to recruit itself
+#   Useful with modules like mod-playerbots, where a "recruited" character can
+#   be an alt bot on the same account, letting you get the Recruit-A-Friend
+#   experience multiplier while soloing with a bot alt.
+# default: false
+#
+
+RecruitFriend.allowSelfRecruit = false
+
+#
 #  RecruitFriend audit log
 #
 #    Appender.RecruitFriend
